@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>25.A.3 Weekly Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;900&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Three complete themes, each a finished look: Blue & White (default),
+   Olive & Gold, and Dark. No OS override — the page owns its appearance. */
+:root{
+  /* ---- Theme 1 · Blue & White ---- */
+  --brand:#0A4C8B; --brand-2:#1C6FBF; --brand-ink:#F3F8FC; --brand-dim:#A9C8E4;
+  --accent:#1769C0; --accent-soft:rgba(23,105,192,.11);
+  --bg:#F6FAFD; --card:#FFFFFF; --card-2:#FAFCFE; --line:#DFEAF3; --line-2:#EDF3F8;
+  --text:#0F2434; --text-2:#3A5367; --muted:#6B8296;
+  --good:#0E8F67; --warn:#C07A0C; --bad:#CF4038; --info:#1769C0;
+  --c1:#1769C0; --c2:#149AA8; --c3:#C07A0C; --c4:#6A5FC4; --c5:#2F8F6B; --c6:#C05A78;
+  --plan:#A9C0D2; --act:#1769C0;
+  --shadow:0 1px 2px rgba(10,45,80,.05), 0 6px 20px rgba(10,45,80,.07);
+  --r:14px; --r-sm:9px;
+  --display:"Tajawal","Cairo",system-ui,sans-serif;
+  --body:"Cairo",system-ui,-apple-system,Segoe UI,sans-serif;
+  color-scheme:light;
+}
+
+/* ---- Theme 2 · Olive & Gold ---- */
+:root[data-palette="olive"]{
+  --brand:#2F3722; --brand-2:#515C36; --brand-ink:#F5F2E4; --brand-dim:#BCB893;
+  --accent:#A9821F; --accent-soft:rgba(169,130,31,.14);
+  --bg:#F7F5EC; --card:#FFFFFF; --card-2:#FBFAF3; --line:#E4E0CE; --line-2:#F0EDE1;
+  --text:#1E2318; --text-2:#48503C; --muted:#78806A;
+  --good:#5C7D3A; --warn:#B07A22; --bad:#AF4A33; --info:#4F6B5B;
+  --c1:#6B7A3A; --c2:#A9821F; --c3:#8A6134; --c4:#4F6B5B; --c5:#9A5A3C; --c6:#6A5F7A;
+  --plan:#C2BDA2; --act:#6B7A3A;
+  --shadow:0 1px 2px rgba(47,55,34,.06), 0 6px 20px rgba(47,55,34,.08);
+  color-scheme:light;
+}
+
+/* ---- Theme 3 · Dark ---- */
+:root[data-palette="dark"]{
+  --brand:#0B1017; --brand-2:#1C2733; --brand-ink:#E9EEF4; --brand-dim:#8CA0B2;
+  --accent:#4FA8E8; --accent-soft:rgba(79,168,232,.15);
+  --bg:#0A0F15; --card:#141C25; --card-2:#10171F; --line:#24303B; --line-2:#1A232D;
+  --text:#E9EEF4; --text-2:#B5C3D0; --muted:#8195A5;
+  --good:#2FBF93; --warn:#E0A443; --bad:#EB6B62; --info:#4FA8E8;
+  --c1:#4FA8E8; --c2:#38C2A6; --c3:#E0A443; --c4:#9A86E8; --c5:#6FBF5C; --c6:#E8718C;
+  --plan:#5E7589; --act:#4FA8E8;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 8px 26px rgba(0,0,0,.38);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--body);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
+}
+h1,h2,h3,h4{font-family:var(--display); margin:0; text-wrap:balance; font-weight:800; letter-spacing:-.01em}
+a{color:var(--accent)}
+.wrap{max-width:1220px; margin:0 auto; padding:0 16px 56px}
+
+/* ---------- brand bar ---------- */
+.bar{background:var(--brand); color:var(--brand-ink); position:sticky; top:0; z-index:40; border-bottom:1px solid rgba(255,255,255,.08)}
+.bar-in{max-width:1220px; margin:0 auto; padding:11px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.mark{display:flex; align-items:center; gap:10px; min-width:0}
+.mark-badge{
+  width:38px;height:38px;border-radius:10px;flex:0 0 38px;
+  background:linear-gradient(145deg,var(--accent),var(--brand-2));
+  display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:13px;
+  color:#fff;letter-spacing:.02em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)
+}
+.mark-t{min-width:0}
+.mark-t b{display:block;font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mark-t span{display:block;font-size:11.5px;color:var(--brand-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-sp{flex:1 1 auto}
+.chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.chip{
+  background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.12);
+  padding:4px 10px; border-radius:999px; font-size:11.5px; color:var(--brand-ink); white-space:nowrap
+}
+.chip b{font-weight:700}
+.chip.live{border-color:color-mix(in srgb,var(--accent) 60%,transparent);background:color-mix(in srgb,var(--accent) 24%,transparent)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--good);display:inline-block;margin-inline-end:5px;vertical-align:1px}
+.btns{display:flex;gap:6px}
+.iconbtn{
+  appearance:none;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);
+  color:var(--brand-ink);border-radius:9px;padding:6px 10px;font-family:var(--body);font-size:12px;
+  cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:600
+}
+.iconbtn:hover{background:rgba(255,255,255,.14)}
+.iconbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.iconbtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sw{display:flex;gap:4px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:3px}
+.sw button{
+  appearance:none;border:0;background:transparent;cursor:pointer;width:22px;height:22px;border-radius:6px;
+  display:grid;place-items:center;padding:0
+}
+.sw button i{width:13px;height:13px;border-radius:4px;display:block}
+.sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--brand-ink)}
+.sw button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.themename{font-size:11.5px;color:var(--brand-dim);font-weight:600;white-space:nowrap;align-self:center}
+
+/* ---------- cover ---------- */
+.hero{position:relative;background:var(--brand);overflow:hidden}
+.hero img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 62%;
+  display:block
+}
+.hero .veil{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(90deg, color-mix(in srgb,var(--brand) 94%,transparent) 0%,
+                           color-mix(in srgb,var(--brand) 72%,transparent) 42%,
+                           color-mix(in srgb,var(--brand) 18%,transparent) 100%),
+    linear-gradient(0deg, color-mix(in srgb,var(--brand) 80%,transparent) 0%, transparent 55%);
+}
+.hero .in{
+  position:relative;max-width:1220px;margin:0 auto;padding:26px 16px 20px;
+  min-height:252px;display:flex;flex-direction:column;justify-content:flex-end;gap:9px;color:var(--brand-ink)
+}
+.hero .eyebrow{
+  display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--brand-ink);opacity:.92
+}
+.hero .eyebrow i{width:22px;height:2px;background:var(--accent);display:block;border-radius:2px}
+.hero h1{font-size:34px;line-height:1.08;letter-spacing:-.025em;font-weight:800}
+.hero .loc{font-size:13.5px;color:var(--brand-dim);max-width:46ch}
+.hero .facts{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.hero .fact{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);
+  border-radius:10px;padding:7px 12px;backdrop-filter:blur(3px)
+}
+.hero .fact .l{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--brand-dim);font-weight:700}
+.hero .fact .v{font-family:var(--display);font-size:14px;font-weight:800;margin-top:1px;white-space:nowrap}
+.hero .fact.hi{background:color-mix(in srgb,var(--accent) 30%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 65%,transparent)}
+@media (max-width:760px){
+  .hero .in{min-height:236px;padding:22px 14px 16px}
+  .hero h1{font-size:25px}
+  .hero .loc{font-size:12.5px;max-width:34ch}
+  .hero img{object-position:52% 56%}
+  .hero .veil{
+    background:
+      linear-gradient(0deg, color-mix(in srgb,var(--brand) 96%,transparent) 0%,
+                            color-mix(in srgb,var(--brand) 78%,transparent) 48%,
+                            color-mix(in srgb,var(--brand) 34%,transparent) 100%);
+  }
+}
+
+/* ---------- section headers ---------- */
+.sec{margin:26px 0 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec .num{
+  font-family:var(--display);font-size:11px;font-weight:800;color:var(--accent);
+  background:var(--accent-soft);padding:3px 8px;border-radius:6px;letter-spacing:.06em
+}
+.sec h2{font-size:17px}
+.sec .note{font-size:12px;color:var(--muted);margin-inline-start:auto}
+
+/* ---------- grid + cards ---------- */
+.grid{display:grid;gap:12px}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:16px;min-width:0
+}
+.card h3{font-size:14px;margin-bottom:2px}
+.card .sub{font-size:11.5px;color:var(--muted);margin-bottom:12px}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.card-head h3{font-size:14px}
+.card-head .sub{margin:2px 0 0}
+
+/* ---------- KPI ---------- */
+.kpis{grid-template-columns:repeat(6,1fr)}
+.kpi{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--k,var(--accent))}
+.kpi .lab{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.kpi .val{font-family:var(--display);font-size:27px;font-weight:800;line-height:1.1;margin-top:5px;letter-spacing:-.02em}
+.kpi .sub2{font-size:11.5px;color:var(--text-2);margin-top:3px}
+.kpi.good .val{color:var(--good)} .kpi.bad .val{color:var(--bad)}
+
+/* ---------- status ---------- */
+.stat{grid-template-columns:repeat(4,1fr)}
+.st{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:11px
+}
+.st .ring{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center}
+.st .ring svg{width:17px;height:17px;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.st .lab{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.st .v{font-family:var(--display);font-size:14px;font-weight:800;margin-top:1px}
+
+/* ---------- pills ---------- */
+.pill{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  padding:3px 9px;border-radius:999px;white-space:nowrap;letter-spacing:.01em
+}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.9}
+.p-done{color:var(--good);background:color-mix(in srgb,var(--good) 13%,transparent)}
+.p-prog{color:var(--info);background:color-mix(in srgb,var(--info) 13%,transparent)}
+.p-hold{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+.p-late{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;margin:0 -16px;padding:0 16px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:380px}
+th{
+  text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  font-weight:700;padding:0 8px 7px;border-bottom:1px solid var(--line);white-space:nowrap
+}
+td{padding:9px 8px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+th.r,td.r{text-align:right}
+td.num{font-weight:600}
+tfoot td{font-weight:800;border-top:1px solid var(--line);border-bottom:0;background:var(--card-2)}
+.swatch{width:9px;height:9px;border-radius:3px;display:inline-block;margin-inline-end:7px;vertical-align:0}
+.pname{font-weight:700;white-space:nowrap}
+.delta{font-weight:700}
+.delta.up{color:var(--good)} .delta.dn{color:var(--bad)} .delta.eq{color:var(--muted)}
+
+/* mini bar inside table cell */
+.mb{height:6px;border-radius:3px;background:var(--line-2);overflow:hidden;min-width:54px}
+.mb i{display:block;height:100%;border-radius:3px;background:var(--act)}
+
+/* ---------- charts ---------- */
+.chart{width:100%;display:block;overflow:visible}
+.chart text{font-family:var(--body);fill:var(--muted);font-size:10px}
+.chart .vlab{fill:var(--text);font-weight:700;font-size:9.5px}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chart .grid-l{stroke:var(--line-2);stroke-width:1}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--text-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:3px;display:block}
+.legend i.line{height:3px;border-radius:2px;width:15px}
+
+/* ---------- activities as cards on phone ---------- */
+.acts{display:none;flex-direction:column;gap:8px}
+.act{border:1px solid var(--line);border-radius:var(--r-sm);padding:11px 12px;background:var(--card-2)}
+.act .t{font-weight:700;font-size:13px;line-height:1.35}
+.act .m{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:7px;font-size:11.5px;color:var(--muted)}
+.act .tag{background:var(--line-2);border-radius:5px;padding:2px 7px;font-weight:600;color:var(--text-2)}
+.act .pr{display:flex;align-items:center;gap:8px;margin-top:9px}
+.act .pr .mb{flex:1}
+.act .pr b{font-size:12px;min-width:34px;text-align:right}
+
+/* ---------- highlights ---------- */
+.hl{display:flex;flex-direction:column;gap:7px}
+.hl .row{
+  display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--r-sm);
+  background:var(--card-2);border:1px solid var(--line-2)
+}
+.hl .code{
+  font-family:var(--display);font-weight:800;font-size:11px;color:#fff;background:var(--pc,var(--accent));
+  border-radius:6px;padding:3px 7px;flex:0 0 auto;letter-spacing:.02em
+}
+.hl .txt{flex:1;min-width:0;font-size:12.5px;color:var(--text-2);line-height:1.35}
+
+/* ---------- pending / photos ---------- */
+.pending{
+  border:1px dashed var(--line);border-radius:var(--r-sm);background:var(--card-2);
+  padding:14px;text-align:center;color:var(--muted);font-size:12.5px
+}
+.minis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.mini{border:1px solid var(--line);border-radius:var(--r-sm);padding:11px;background:var(--card-2)}
+.mini .l{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.mini .n{font-family:var(--display);font-size:20px;font-weight:800;margin-top:4px;color:var(--text-2)}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.ph{border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;background:var(--card-2)}
+.ph .im{aspect-ratio:4/3;display:grid;place-items:center;background:
+  repeating-linear-gradient(45deg,var(--line-2) 0 10px,transparent 10px 20px)}
+.ph .im svg{width:30px;height:30px;stroke:var(--muted);fill:none;stroke-width:1.6}
+.ph .cap{padding:9px 11px;font-size:11.5px;color:var(--text-2)}
+.ph .cap b{display:block;font-size:12.5px;color:var(--text);font-weight:700}
+.ph .cap span{color:var(--muted);font-size:11px}
+
+/* ---------- issues ---------- */
+.iss{display:flex;gap:11px;align-items:flex-start;padding:12px 13px;border-radius:var(--r-sm);
+  background:color-mix(in srgb,var(--warn) 9%,transparent);border:1px solid color-mix(in srgb,var(--warn) 28%,transparent)}
+.iss svg{width:17px;height:17px;flex:0 0 17px;stroke:var(--warn);fill:none;stroke-width:2;margin-top:1px}
+.iss .b{font-size:13px;color:var(--text)}
+.iss .b b{display:block;font-family:var(--display);font-weight:800;margin-bottom:2px;font-size:13px}
+
+/* ---------- archive ---------- */
+.arch{display:flex;flex-direction:column;gap:7px}
+.arch a,.arch .row{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:var(--r-sm);
+  background:var(--card-2);border:1px solid var(--line-2);text-decoration:none;color:inherit
+}
+.arch a:hover{border-color:var(--accent);background:var(--accent-soft)}
+.arch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.arch .no{
+  font-family:var(--display);font-weight:800;font-size:12px;color:#fff;background:var(--accent);
+  border-radius:6px;padding:4px 9px;flex:0 0 auto;letter-spacing:.02em
+}
+.arch .row .no{background:var(--muted)}
+.arch .meta2{flex:1;min-width:0}
+.arch .meta2 b{display:block;font-size:13px;font-weight:700}
+.arch .meta2 span{font-size:11.5px;color:var(--muted)}
+.arch .get{font-size:11.5px;font-weight:700;color:var(--accent);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.arch .get svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.arch .soon{font-size:11px;color:var(--muted);white-space:nowrap}
+.arch .cur{border-color:color-mix(in srgb,var(--accent) 45%,transparent);
+  background:color-mix(in srgb,var(--accent) 7%,transparent)}
+
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--muted)}
+footer .sp{flex:1}
+
+/* ---------- responsive ---------- */
+.c12{grid-column:span 12} .c8{grid-column:span 8} .c7{grid-column:span 7}
+.c6{grid-column:span 6} .c5{grid-column:span 5} .c4{grid-column:span 4}
+.g12{grid-template-columns:repeat(12,1fr)}
+@media (max-width:1000px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .g12 .c8,.g12 .c7,.g12 .c6,.g12 .c5,.g12 .c4{grid-column:span 12}
+  .minis{grid-template-columns:repeat(2,1fr)}
+  .photos{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  body{font-size:14.5px}
+  .wrap{padding:0 14px 48px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .stat{grid-template-columns:repeat(2,1fr)}
+  .kpi .val{font-size:23px}
+  .sec{margin:22px 0 10px}
+  .sec .note{margin-inline-start:0;flex-basis:100%}
+  table.resp{display:none}
+  .acts{display:flex}
+  table{min-width:0;font-size:12.5px}
+  th,td{padding-left:5px;padding-right:5px}
+  th{font-size:10px}
+  .photos{grid-template-columns:1fr 1fr}
+  .mark-t b{font-size:14px}
+  .bar .chips{display:none}      /* period and data date live on the cover on phones */
+  .themename{display:none}
+  .bar-in{padding:9px 14px;flex-wrap:nowrap}
+  .btns{margin-inline-start:auto}
+}
+@media (prefers-reduced-motion:no-preference){
+  .kpi,.card,.st{transition:border-color .18s ease}
+  .mb i{transition:width .5s cubic-bezier(.2,.7,.2,1)}
+}
+
+/* ---------- print / PDF ---------- */
+@media print{
+  :root{
+    --bg:#FFFFFF; --card:#FFFFFF; --card-2:#FAFBFC; --line:#C9D5E0; --line-2:#E3EAF1;
+    --text:#111C26; --text-2:#33485A; --muted:#5D7182;
+    --shadow:none; color-scheme:light;
+  }
+  @page{size:A4 portrait;margin:11mm}
+  html,body{background:#fff !important}
+  .bar{position:static;break-inside:avoid}
+  .btns,.sw,#pdfBtn,.themename{display:none !important}
+  .wrap{max-width:none;padding:0}
+  .hero .in{min-height:190px}
+  .card,.kpi,.st,.ph,.act,.iss,.arch a,.arch .row{
+    break-inside:avoid;page-break-inside:avoid;box-shadow:none !important}
+  .sec{break-after:avoid;page-break-after:avoid;margin-top:14px}
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .photos{grid-template-columns:repeat(2,1fr)}
+  #elapsed{max-width:420px}
+  .chart{max-width:100%}
+  .acts{display:none !important}
+  table.resp{display:table !important}
+  .tw{overflow:visible}
+  [data-sec="archive"]{display:none !important}
+  footer{break-inside:avoid}
+  a{text-decoration:none;color:inherit}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="mark">
+      <div class="mark-badge">25<br>A3</div>
+      <div class="mark-t">
+        <b id="hProject">Building 25.A.3</b>
+        <span id="hSector">Sector 02, 03, Split &amp; Plaza</span>
+      </div>
+    </div>
+    <div class="bar-sp"></div>
+    <div class="chips">
+      <span class="chip">Report <b id="hNo">05</b></span>
+      <span class="chip" id="hPeriod">16 – 22 Nov 2026</span>
+      <span class="chip live"><span class="dot"></span>Data date <b id="hData">22-Nov-2026</b></span>
+    </div>
+    <div class="btns">
+      <div class="sw" role="group" aria-label="Theme">
+        <button type="button" data-pal="blue"  aria-label="Blue and white theme" aria-pressed="true"><i style="background:linear-gradient(135deg,#0A4C8B 50%,#FFFFFF 50%)"></i></button>
+        <button type="button" data-pal="olive" aria-label="Olive and gold theme" aria-pressed="false"><i style="background:linear-gradient(135deg,#2F3722 50%,#C9A227 50%)"></i></button>
+        <button type="button" data-pal="dark"  aria-label="Dark theme" aria-pressed="false"><i style="background:linear-gradient(135deg,#0B1017 50%,#4FA8E8 50%)"></i></button>
+      </div>
+      <span class="themename" id="themeName">Blue &amp; White</span>
+      <button type="button" class="iconbtn" id="pdfBtn" aria-label="Download this report as PDF">
+        <svg viewBox="0 0 24 24"><path d="M12 3v11M12 14l-4-4M12 14l4-4"></path><path d="M4 17v2.5A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5V17"></path></svg>
+        <span class="pdflabel">PDF</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <img src="hero.jpg" alt="Building 25.A.3 — architectural view of the project">
+  <div class="veil"></div>
+  <div class="in">
+    <span class="eyebrow"><i></i><span id="cvEyebrow">Weekly Progress Report No. 05</span></span>
+    <h1 id="cvTitle">Building 25.A.3</h1>
+    <p class="loc" id="cvLoc">Sector 02, 03, Split &amp; Plaza · New Administrative Capital, Cairo</p>
+    <div class="facts" id="cvFacts"></div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- 01 EXECUTIVE SUMMARY -->
+  <div class="sec"><span class="num">01</span><h2>Executive Summary</h2>
+    <span class="note">Cut-off 22-Nov-2026 · cost-loaded % from the baseline</span></div>
+  <div class="grid kpis" id="kpis"></div>
+
+  <div class="grid stat" id="statusRow" style="margin-top:12px"></div>
+
+  <div class="grid g12" style="margin-top:12px">
+    <div class="card c7">
+      <div class="card-head"><div><h3>Key highlights – site status</h3>
+        <p class="sub">Leading activity in each Part this week</p></div></div>
+      <div class="hl" id="hl"></div>
+    </div>
+    <div class="card c5">
+      <div class="card-head"><div><h3>Time elapsed vs progress</h3>
+        <p class="sub">Calendar time against earned progress</p></div></div>
+      <svg class="chart" id="elapsed" viewBox="0 0 420 150" role="img" aria-label="Time elapsed versus progress"></svg>
+    </div>
+  </div>
+
+  <!-- 02 PROGRESS -->
+  <div class="sec"><span class="num">02</span><h2>Overall Progress &amp; S-Curve</h2>
+    <span class="note">Cumulative planned vs actual, Jan-26 → Dec-27</span></div>
+  <div class="card c12">
+    <div class="card-head">
+      <div><h3>Cumulative progress (%)</h3>
+        <p class="sub" id="scNote">Planned from the submitted baseline · actual to the data date</p></div>
+    </div>
+    <svg class="chart" id="scurve" viewBox="0 0 980 300" role="img" aria-label="S-curve of planned versus actual cumulative progress"></svg>
+    <div class="legend">
+      <span><i class="line" style="background:var(--plan)"></i>Planned</span>
+      <span><i class="line" style="background:var(--act)"></i>Actual</span>
+      <span><i style="background:var(--accent-soft);border:1px solid var(--act)"></i>Earned to date</span>
+    </div>
+  </div>
+
+  <!-- 03 BY PART -->
+  <div class="sec"><span class="num">03</span><h2>Progress by Part</h2>
+    <span class="note">Weights are the BOQ-loaded share of each Part</span></div>
+  <div class="grid g12">
+    <div class="card c7">
+      <div class="card-head"><div><h3>Planned vs actual by Part (%)</h3>
+        <p class="sub">Six Parts across Sector 02, Sector 03, Split and Plaza</p></div></div>
+      <svg class="chart" id="partsChart" viewBox="0 0 620 260" role="img" aria-label="Planned versus actual progress by Part"></svg>
+      <div class="legend">
+        <span><i style="background:var(--plan)"></i>Planned</span>
+        <span><i style="background:var(--act)"></i>Actual</span>
+      </div>
+    </div>
+    <div class="card c5">
+      <div class="card-head"><div><h3>Part summary</h3>
+        <p class="sub">Weight, progress and variance</p></div></div>
+      <div class="tw"><table id="partsTable"></table></div>
+    </div>
+  </div>
+
+  <!-- 04 WORK PACKAGE -->
+  <div class="sec"><span class="num">04</span><h2>Progress by Work Package &amp; BOQ</h2>
+    <span class="note">Vertical build-up and contract value split</span></div>
+  <div class="grid g12">
+    <div class="card c7">
+      <div class="card-head"><div><h3>Planned vs actual by work package (%)</h3>
+        <p class="sub">From earthworks up to the second floor</p></div></div>
+      <svg class="chart" id="pkgChart" viewBox="0 0 620 300" role="img" aria-label="Planned versus actual progress by work package"></svg>
+      <div class="legend">
+        <span><i style="background:var(--plan)"></i>Planned</span>
+        <span><i style="background:var(--act)"></i>Actual</span>
+      </div>
+    </div>
+    <div class="card c5">
+      <div class="card-head"><div><h3>BOQ analysis</h3>
+        <p class="sub" id="boqTotal">Total EGP 858,117,814</p></div></div>
+      <svg class="chart" id="boqChart" viewBox="0 0 260 180" role="img" aria-label="BOQ value by division"></svg>
+      <div class="tw" style="margin-top:6px"><table id="boqTable"></table></div>
+    </div>
+  </div>
+
+  <!-- 05 ACTIVITIES -->
+  <div class="sec"><span class="num">05</span><h2>Activities on Site – this Week</h2>
+    <span class="note" id="actPeriod">16 – 22 Nov 2026</span></div>
+  <div class="card c12">
+    <div class="tw"><table class="resp" id="actTable"></table></div>
+    <div class="acts" id="actCards"></div>
+  </div>
+
+  <!-- 06 RESOURCES -->
+  <div class="sec"><span class="num">06</span><h2>Resources – Manpower</h2>
+    <span class="note">Daily head-count on site, Mon → Sun</span></div>
+  <div class="grid g12">
+    <div class="card c8">
+      <div class="card-head"><div><h3>Daily manpower on site</h3>
+        <p class="sub">Stacked by craft · Friday is a non-working day</p></div></div>
+      <svg class="chart" id="mpChart" viewBox="0 0 700 280" role="img" aria-label="Daily manpower on site stacked by craft"></svg>
+      <div class="legend" id="mpLegend"></div>
+    </div>
+    <div class="card c4">
+      <div class="card-head"><div><h3>This week – man-days</h3>
+        <p class="sub">Total actual manpower by craft</p></div></div>
+      <div class="tw"><table id="mpTable"></table></div>
+    </div>
+  </div>
+
+  <!-- 07 ENGINEERING — switched on from DATA.show.engineering -->
+  <div class="sec" data-sec="engineering"><span class="num">07</span><h2>Engineering &amp; Procurement</h2>
+    <span class="note">Shop drawings and material status</span></div>
+  <div class="grid g12" data-sec="engineering">
+    <div class="card c6">
+      <div class="card-head"><div><h3>Shop drawings</h3>
+        <p class="sub">Status of submittals at the data date</p></div></div>
+      <div class="minis" id="engMinis"></div>
+      <div class="pending" style="margin-top:11px">Fields ready – waiting for the weekly engineering log</div>
+    </div>
+    <div class="card c6">
+      <div class="card-head"><div><h3>Materials</h3>
+        <p class="sub">Procurement of the 20 key materials</p></div></div>
+      <div class="minis" id="matMinis"></div>
+      <div class="pending" style="margin-top:11px">Fields ready – waiting for the weekly procurement log</div>
+    </div>
+  </div>
+
+  <!-- 08 ISSUES -->
+  <div class="sec"><span class="num">08</span><h2>Area of Concern</h2></div>
+  <div class="card c12" id="issuesCard"></div>
+
+  <!-- 09 PHOTOS -->
+  <div class="sec" data-sec="photos"><span class="num">09</span><h2>Site Progress Photos</h2>
+    <span class="note">Captioned with sector, work and date</span></div>
+  <div class="photos" id="photos" data-sec="photos"></div>
+
+  <!-- 10 ARCHIVE -->
+  <div class="sec" data-sec="archive"><span class="num">10</span><h2>Report Archive</h2>
+    <span class="note">Every weekly report as a PDF</span></div>
+  <div class="card c12" data-sec="archive" id="archiveCard"></div>
+
+  <footer>
+    <span id="fPrep">Prepared by Leading Blocks – Planning &amp; Project Controls</span>
+    <span class="sp"></span>
+    <span id="fSrc"></span>
+    <span id="fUpd">Last updated 22-Nov-2026 20:00</span>
+  </footer>
+</div>
+
+<script>
+/* =======================================================================
+   CONFIG — the only block you edit after publishing.
+   ======================================================================= */
+const CONFIG = {
+  // Google Sheet ID: the long code in the sheet's own address, between
+  // /spreadsheets/d/  and  /edit . The sheet must be shared as
+  // "Anyone with the link — Viewer". Leave empty to use the data below.
+  sheetId: "",
+  photosPath : "photos/",     // folder in the repo holding the weekly photos
+  reportsPath: "reports/",    // folder in the repo holding the report PDFs
+  refreshMinutes: 0           // 0 = read once on open; 15 = re-read every 15 min
+};
+
+/* =======================================================================
+   DATA — what the page draws. It is the saved copy: the page shows it
+   at once, then replaces it with the sheet's contents when they arrive.
+   Values below are Weekly Report No. 05 (16–22 Nov 2026).
+   ======================================================================= */
+let DATA = {
+  // switch a whole section on or off from here (later: a cell in the sheet)
+  show:{ engineering:false },
+  meta:{
+    project:"Building 25.A.3", sector:"Sector 02, 03, Split & Plaza",
+    reportNo:"05", period:"16 – 22 Nov 2026", dataDate:"22-Nov-2026",
+    location:"New Administrative Capital, Cairo",
+    cover:"hero.jpg",
+    preparedBy:"Prepared by Leading Blocks – Planning & Project Controls",
+    updated:"22-Nov-2026 20:00"
+  },
+  kpi:{
+    planned:39.89, plannedWeek:1.07,
+    actual:41.02, actualWeek:1.02,
+    variance:1.13, spi:1.03,
+    timeElapsedPct:44.7, daysElapsed:326, daysRemaining:403,
+    forecastFinish:"31-Dec-2027"
+  },
+  status:[
+    {lab:"Schedule",    v:"Ahead of schedule", s:"good"},
+    {lab:"Engineering", v:"On schedule",       s:"info"},
+    {lab:"Procurement", v:"On schedule",       s:"info"},
+    {lab:"Construction",v:"Ahead of schedule", s:"good"}
+  ],
+  highlights:[
+    {code:"P1", txt:"Ground Floor – slab works", st:"Completed",   c:"--c1"},
+    {code:"P2", txt:"Upper Basement slab 97% · Ground Floor columns and walls", st:"In progress", c:"--c2"},
+    {code:"P3", txt:"Ground Floor – columns and shear walls", st:"In progress", c:"--c3"},
+    {code:"P4", txt:"Ground Floor – slab works", st:"In progress", c:"--c4"},
+    {code:"P5", txt:"Lower Basement – slab works", st:"In progress", c:"--c5"},
+    {code:"P6", txt:"Foundation plain concrete complete – works on hold", st:"On hold", c:"--c6"}
+  ],
+  scurve:{
+    months:["Jan-26","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec",
+            "Jan-27","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+    planned:[1.4,3.5,4.7,14.3,19.8,22.8,27.2,32.2,35.2,38.0,42.4,51.3,
+             59.7,66.5,76.2,83.9,87.2,89.8,90.9,94.0,96.3,99.2,100,null],
+    actual:[1.3,3.3,4.5,13.6,19.1,22.6,26.0,30.4,35.0,39.05,41.02,null,
+            null,null,null,null,null,null,null,null,null,null,null,null]
+  },
+  parts:[
+    {code:"P1", name:"Part 01", zone:"Sector 03",  weight:21.5, planned:48.05, actual:52.01, c:"--c1"},
+    {code:"P2", name:"Part 02", zone:"Sector 03",  weight:23.4, planned:44.98, actual:46.18, c:"--c2"},
+    {code:"P3", name:"Part 03", zone:"Sector 02",  weight:17.6, planned:44.24, actual:44.62, c:"--c3"},
+    {code:"P4", name:"Part 04", zone:"Sector 02",  weight:15.0, planned:49.36, actual:49.13, c:"--c4"},
+    {code:"P5", name:"Part 05", zone:"Split",      weight:8.3,  planned:22.86, actual:22.52, c:"--c5"},
+    {code:"P6", name:"Part 06", zone:"Plaza",      weight:14.3, planned:13.75, actual:13.75, c:"--c6"}
+  ],
+  packages:[
+    {name:"Earthworks",            planned:80.59, actual:80.59},
+    {name:"Sub-structure concrete",planned:75.25, actual:75.25},
+    {name:"Lower Basement",        planned:62.80, actual:62.62},
+    {name:"Upper Basement",        planned:58.34, actual:58.93},
+    {name:"Ground Floor",          planned:17.49, actual:37.74},
+    {name:"First Floor",           planned:0,     actual:0},
+    {name:"Second Floor",          planned:0,     actual:0}
+  ],
+  boq:{total:858117814, rows:[
+    {div:"RFMT & PT",      amount:397117200, pct:46.28, c:"--c1"},
+    {div:"Concrete",       amount:390369489, pct:45.49, c:"--c2"},
+    {div:"Earthwork",      amount:60406250,  pct:7.04,  c:"--c3"},
+    {div:"Protection",     amount:7110500,   pct:0.83,  c:"--c4"},
+    {div:"Steel structure",amount:3114375,   pct:0.36,  c:"--c5"}
+  ]},
+  activities:[
+    {a:"Formwork installation for slab / reinforcement works", p:"Part 01", l:"Ground Floor",   pc:100, s:"Completed"},
+    {a:"Pouring concrete for slab",             p:"Part 01", l:"Ground Floor",   pc:100, s:"Completed"},
+    {a:"Slab works",                            p:"Part 02", l:"Upper Basement", pc:97,  s:"In progress"},
+    {a:"Reinforcement works for columns",       p:"Part 02", l:"Ground Floor",   pc:100, s:"Completed"},
+    {a:"Formwork installation for columns",     p:"Part 02", l:"Ground Floor",   pc:75,  s:"In progress"},
+    {a:"Pouring concrete for columns",          p:"Part 02", l:"Ground Floor",   pc:75,  s:"In progress"},
+    {a:"Columns & shear walls works",           p:"Part 03", l:"Ground Floor",   pc:15,  s:"In progress"},
+    {a:"Formwork installation for slab",        p:"Part 04", l:"Ground Floor",   pc:80,  s:"In progress"},
+    {a:"Reinforcement works for slab",          p:"Part 04", l:"Ground Floor",   pc:15,  s:"In progress"},
+    {a:"Formwork installation for slab",        p:"Part 05", l:"Lower Basement", pc:25,  s:"In progress"}
+  ],
+  manpower:{
+    days:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+    off:[4],
+    crafts:[
+      {name:"Carpenter",         v:[36,38,50,39,0,32,41], c:"--c1"},
+      {name:"Steel-fixer",       v:[17,25,25,32,0,32,32], c:"--c2"},
+      {name:"Civil helper",      v:[17,19,21,21,0,19,20], c:"--c3"},
+      {name:"Post-tension",      v:[14,0,20,2,0,10,10],   c:"--c4"},
+      {name:"Insulation worker", v:[4,4,4,4,0,4,4],       c:"--c5"},
+      {name:"Mason",             v:[0,0,0,0,0,4,0],       c:"--c6"}
+    ]
+  },
+  engineering:[
+    {l:"Submitted",   n:null},{l:"Approved",    n:null},
+    {l:"Under review",n:null},{l:"Rejected",    n:null}
+  ],
+  materials:[
+    {l:"Delivered", n:null},{l:"PO issued",  n:null},
+    {l:"Approved",  n:null},{l:"Pending",    n:null}
+  ],
+  issues:[
+    {t:"Baseline not yet approved", d:"The project baseline schedule is still awaiting the consultant's approval. Planned percentages shown here are taken from the submitted baseline and may change once it is approved."}
+  ],
+  photos:[
+    {f:"w05-1.jpg", t:"Sector 03 – Part 02", d:"Upper Basement slab works", dt:"22-Nov-2026"},
+    {f:"w05-2.jpg", t:"Sector 02 – Part 04", d:"Ground Floor slab formwork", dt:"22-Nov-2026"},
+    {f:"w05-3.jpg", t:"Split – Part 05",     d:"Lower Basement slab formwork", dt:"22-Nov-2026"},
+    {f:"w05-4.jpg", t:"Sector 03 – Part 01", d:"Ground Floor slab pour", dt:"22-Nov-2026"},
+    {f:"w05-5.jpg", t:"Sector 02 – Part 03", d:"Ground Floor columns", dt:"22-Nov-2026"},
+    {f:"w05-6.jpg", t:"Plaza – Part 06",     d:"Foundation plain concrete", dt:"22-Nov-2026"}
+  ],
+  archive:[
+    {no:"01", period:"", dataDate:"", pdf:"", note:""},
+    {no:"02", period:"", dataDate:"", pdf:"", note:""},
+    {no:"03", period:"", dataDate:"", pdf:"", note:""},
+    {no:"04", period:"", dataDate:"", pdf:"", note:""},
+    {no:"05", period:"16 – 22 Nov 2026", dataDate:"22-Nov-2026", pdf:"", note:"Current report"}
+  ]
+};
+
+/* ---------------- helpers ---------------- */
+const $  = s => document.querySelector(s);
+const ce = (t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+const f1 = n => (n==null?"—":n.toFixed(1));
+const f2 = n => (n==null?"—":n.toFixed(2));
+const money = n => n.toLocaleString("en-US");
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag,attrs,text){
+  const e=document.createElementNS(SVGNS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  if(text!=null) e.textContent=text;
+  return e;
+}
+function cvar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+const narrow = () => window.innerWidth < 700;
+function vb(el,w,h){ el.setAttribute("viewBox","0 0 "+w+" "+h); }
+function statusClass(s){
+  const t=(s||"").toLowerCase();
+  if(t.includes("complete")) return "p-done";
+  if(t.includes("hold"))     return "p-hold";
+  if(t.includes("delay")||t.includes("late")) return "p-late";
+  return "p-prog";
+}
+
+/* ---------------- theme ---------------- */
+const root=document.documentElement;
+const THEMES={blue:"Blue & White", olive:"Olive & Gold", dark:"Dark"};
+(function initTheme(){
+  let pal="blue";
+  try{ pal=localStorage.getItem("bl-theme")||"blue"; }catch(e){}
+  if(!THEMES[pal]) pal="blue";
+  apply(pal);
+  document.querySelectorAll(".sw button").forEach(b=>{
+    b.addEventListener("click",()=>{ apply(b.dataset.pal); drawAll(); });
+  });
+  function apply(p){
+    root.setAttribute("data-palette",p);
+    document.querySelectorAll(".sw button").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.pal===p)));
+    const n=$("#themeName"); if(n) n.textContent=THEMES[p];
+    try{ localStorage.setItem("bl-theme",p); }catch(e){}
+  }
+})();
+
+/* ---------------- header + static text ---------------- */
+function head(){
+  const m=DATA.meta;
+  $("#hProject").textContent=m.project; $("#hSector").textContent=m.sector;
+  $("#hNo").textContent=m.reportNo; $("#hPeriod").textContent=m.period;
+  $("#hData").textContent=m.dataDate; $("#actPeriod").textContent=m.period;
+  $("#fPrep").textContent=m.preparedBy; $("#fUpd").textContent="Last updated "+m.updated;
+  document.title=m.project.replace("Building ","")+" Weekly Dashboard";
+  // cover
+  const k=DATA.kpi;
+  $("#cvEyebrow").textContent="Weekly Progress Report No. "+m.reportNo;
+  $("#cvTitle").textContent=m.project;
+  $("#cvLoc").textContent=m.sector+" · "+(m.location||"New Administrative Capital, Cairo");
+  const facts=[
+    {l:"Reporting period", v:m.period},
+    {l:"Data date",        v:m.dataDate},
+    {l:"Actual progress",  v:f2(k.actual)+"%", hi:true},
+    {l:"Variance",         v:(k.variance>0?"+":"")+k.variance.toFixed(2)+"%"}
+  ];
+  const fb=$("#cvFacts"); fb.innerHTML="";
+  facts.forEach(f=>fb.appendChild(ce("div","fact"+(f.hi?" hi":""),
+    '<div class="l">'+f.l+'</div><div class="v">'+f.v+'</div>')));
+}
+
+/* ---------------- KPI ---------------- */
+function kpis(){
+  const k=DATA.kpi, box=$("#kpis"); box.innerHTML="";
+  const sign = n => (n>0?"+":"")+n.toFixed(2);
+  const items=[
+    {lab:"Planned progress", val:f2(k.planned)+"%", sub:sign(k.plannedWeek)+"% this week", k:"var(--plan)"},
+    {lab:"Actual progress",  val:f2(k.actual)+"%",  sub:sign(k.actualWeek)+"% this week",  k:"var(--act)"},
+    {lab:"Variance",         val:sign(k.variance)+"%", sub:k.variance>=0?"Ahead of schedule":"Behind schedule",
+       k:k.variance>=0?"var(--good)":"var(--bad)", cls:k.variance>=0?"good":"bad"},
+    {lab:"SPI",              val:k.spi.toFixed(2), sub:k.spi>=1?"On or above plan":"Below plan",
+       k:k.spi>=1?"var(--good)":"var(--bad)", cls:k.spi>=1?"good":"bad"},
+    {lab:"Time elapsed",     val:f1(k.timeElapsedPct)+"%", sub:k.daysElapsed+" days · "+k.daysRemaining+" remaining", k:"var(--c4)"},
+    {lab:"Forecast finish",  val:k.forecastFinish, sub:"Project completion date", k:"var(--c1)", small:true}
+  ];
+  items.forEach(it=>{
+    const d=ce("div","kpi"+(it.cls?" "+it.cls:""));
+    d.style.setProperty("--k",it.k);
+    d.innerHTML='<div class="lab">'+it.lab+'</div><div class="val"'+
+      (it.small?' style="font-size:19px"':'')+'>'+it.val+'</div><div class="sub2">'+it.sub+'</div>';
+    box.appendChild(d);
+  });
+}
+
+/* ---------------- status row ---------------- */
+function statusRow(){
+  const box=$("#statusRow"); box.innerHTML="";
+  const ico={
+    good:'<path d="M20 6L9 17l-5-5"></path>',
+    info:'<circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M12 6.2v.2"></path>',
+    warn:'<path d="M12 4l9 16H3z"></path><path d="M12 10v4M12 17v.2"></path>'
+  };
+  const col={good:"var(--good)",info:"var(--info)",warn:"var(--warn)"};
+  DATA.status.forEach(s=>{
+    const d=ce("div","st");
+    d.innerHTML='<div class="ring" style="background:color-mix(in srgb,'+col[s.s]+' 13%,transparent)">'+
+      '<svg viewBox="0 0 24 24" style="stroke:'+col[s.s]+'">'+ico[s.s]+'</svg></div>'+
+      '<div><div class="lab">'+s.lab+'</div><div class="v" style="color:'+col[s.s]+'">'+s.v+'</div></div>';
+    box.appendChild(d);
+  });
+}
+
+/* ---------------- highlights ---------------- */
+function highlights(){
+  const box=$("#hl"); box.innerHTML="";
+  DATA.highlights.forEach(h=>{
+    const r=ce("div","row");
+    r.innerHTML='<span class="code" style="--pc:var('+h.c+')">'+h.code+'</span>'+
+      '<span class="txt">'+h.txt+'</span>'+
+      '<span class="pill '+statusClass(h.st)+'">'+h.st+'</span>';
+    box.appendChild(r);
+  });
+}
+
+/* ---------------- elapsed vs progress ---------------- */
+function elapsed(){
+  const s=$("#elapsed"); s.innerHTML="";
+  const k=DATA.kpi, W=420, H=150; vb(s,W,H);
+  const x0=12, w=W-24, bh=26, gap=34;
+  const rows=[
+    {lab:"Time elapsed", v:k.timeElapsedPct, c:"var(--c4)", r:k.daysElapsed+" of "+(k.daysElapsed+k.daysRemaining)+" days"},
+    {lab:"Planned progress", v:k.planned, c:"var(--plan)", r:f2(k.planned)+"%"},
+    {lab:"Actual progress",  v:k.actual,  c:"var(--act)",  r:f2(k.actual)+"%"}
+  ];
+  rows.forEach((r,i)=>{
+    const y=18+i*(bh+gap);
+    s.appendChild(sv("text",{x:x0,y:y-4,class:"vlab"},r.lab));
+    s.appendChild(sv("text",{x:x0+w,y:y-4,"text-anchor":"end"},r.r));
+    s.appendChild(sv("rect",{x:x0,y:y,width:w,height:bh,rx:7,fill:"var(--line-2)"}));
+    s.appendChild(sv("rect",{x:x0,y:y,width:Math.max(2,w*r.v/100),height:bh,rx:7,fill:r.c}));
+  });
+}
+
+/* ---------------- S-curve ---------------- */
+function scurve(){
+  const s=$("#scurve"); s.innerHTML="";
+  const nw=narrow();
+  const d=DATA.scurve, W=nw?470:980, H=nw?330:300, L=nw?36:42, R=nw?14:16, T=14, B=nw?30:34;
+  vb(s,W,H);
+  const pw=W-L-R, ph=H-T-B, n=d.months.length, every=nw?4:2;
+  const X=i=> L + (n===1?0:i*pw/(n-1));
+  const Y=v=> T + ph - (v/100)*ph;
+  // grid + y labels
+  for(let v=0;v<=100;v+=20){
+    s.appendChild(sv("line",{x1:L,y1:Y(v),x2:L+pw,y2:Y(v),class:v===0?"axis":"grid-l"}));
+    s.appendChild(sv("text",{x:L-8,y:Y(v)+3.5,"text-anchor":"end","font-size":nw?11:10},v+"%"));
+  }
+  d.months.forEach((m,i)=>{
+    if(i%every===0) s.appendChild(sv("text",{x:X(i),y:H-11,"text-anchor":"middle","font-size":nw?10.5:9.5},m));
+  });
+  const path=(arr)=>{
+    let p="",started=false;
+    arr.forEach((v,i)=>{ if(v==null)return; p+= (started?" L ":"M ")+X(i)+" "+Y(v); started=true; });
+    return p;
+  };
+  // actual area fill
+  const actIdx=d.actual.map((v,i)=>v==null?-1:i).filter(i=>i>=0);
+  if(actIdx.length){
+    let ap="M "+X(actIdx[0])+" "+Y(0);
+    actIdx.forEach(i=>{ ap+=" L "+X(i)+" "+Y(d.actual[i]); });
+    ap+=" L "+X(actIdx[actIdx.length-1])+" "+Y(0)+" Z";
+    s.appendChild(sv("path",{d:ap,fill:"var(--accent-soft)"}));
+  }
+  s.appendChild(sv("path",{d:path(d.planned),fill:"none",stroke:"var(--plan)","stroke-width":2.4,
+    "stroke-dasharray":"6 4","stroke-linejoin":"round"}));
+  s.appendChild(sv("path",{d:path(d.actual),fill:"none",stroke:"var(--act)","stroke-width":2.8,"stroke-linejoin":"round"}));
+  // endpoint markers
+  const last=(arr)=>{let k=-1;arr.forEach((v,i)=>{if(v!=null)k=i});return k;};
+  const la=last(d.actual), lp=last(d.planned);
+  if(lp>=0){
+    s.appendChild(sv("circle",{cx:X(lp),cy:Y(d.planned[lp]),r:4,fill:"var(--card)",stroke:"var(--plan)","stroke-width":2.4}));
+    s.appendChild(sv("text",{x:X(lp)-6,y:Y(d.planned[lp])-9,"text-anchor":"end",class:"vlab","font-size":nw?11:10},f1(d.planned[lp])+"%"));
+  }
+  if(la>=0){
+    s.appendChild(sv("line",{x1:X(la),y1:T,x2:X(la),y2:T+ph,stroke:"var(--act)","stroke-width":1,
+      "stroke-dasharray":"3 3",opacity:.5}));
+    s.appendChild(sv("circle",{cx:X(la),cy:Y(d.actual[la]),r:5,fill:"var(--act)",stroke:"var(--card)","stroke-width":2}));
+    const lx=X(la)+10;
+    s.appendChild(sv("text",{x:lx,y:Y(d.actual[la])-15,class:"vlab","font-size":nw?13:11},f2(d.actual[la])+"%"));
+    s.appendChild(sv("text",{x:lx,y:Y(d.actual[la])-3,"font-size":nw?10:9.5},"actual · "+DATA.meta.dataDate));
+  }
+}
+
+/* ---------------- grouped bars: parts ---------------- */
+function partsChart(){
+  const s=$("#partsChart"); s.innerHTML="";
+  const nw=narrow();
+  const p=DATA.parts, W=nw?430:620, H=nw?270:260, L=nw?30:34, R=10, T=20, B=42;
+  vb(s,W,H);
+  const fs=nw?10:9;
+  const pw=W-L-R, ph=H-T-B, slot=pw/p.length, bw=Math.min(nw?17:22,slot/3.2);
+  const Y=v=>T+ph-(v/100)*ph;
+  for(let v=0;v<=100;v+=25){
+    s.appendChild(sv("line",{x1:L,y1:Y(v),x2:L+pw,y2:Y(v),class:v===0?"axis":"grid-l"}));
+    s.appendChild(sv("text",{x:L-7,y:Y(v)+3.5,"text-anchor":"end","font-size":fs},v+"%"));
+  }
+  p.forEach((d,i)=>{
+    const cx=L+slot*i+slot/2;
+    const x1=cx-bw-2, x2=cx+2;
+    s.appendChild(sv("rect",{x:x1,y:Y(d.planned),width:bw,height:ph-(Y(d.planned)-T),rx:3,fill:"var(--plan)"}));
+    s.appendChild(sv("rect",{x:x2,y:Y(d.actual),width:bw,height:Math.max(1,ph-(Y(d.actual)-T)),rx:3,fill:"var("+d.c+")"}));
+    s.appendChild(sv("text",{x:x1+bw/2,y:Y(d.planned)-16,"text-anchor":"middle","font-size":fs-0.5},f1(d.planned)));
+    s.appendChild(sv("text",{x:x2+bw/2,y:Y(d.actual)-5,"text-anchor":"middle",class:"vlab","font-size":fs},f1(d.actual)));
+    s.appendChild(sv("text",{x:cx,y:H-21,"text-anchor":"middle",class:"vlab","font-size":nw?11:10.5},d.code));
+    s.appendChild(sv("text",{x:cx,y:H-9,"text-anchor":"middle","font-size":fs-0.5},"w "+f1(d.weight)+"%"));
+  });
+}
+
+/* ---------------- parts table ---------------- */
+function partsTable(){
+  const t=$("#partsTable");
+  let h='<thead><tr><th>Part</th><th class="r">Weight</th><th class="r">Planned</th><th class="r">Actual</th><th class="r">Var.</th></tr></thead><tbody>';
+  DATA.parts.forEach(p=>{
+    const v=p.actual-p.planned;
+    const cls = Math.abs(v)<0.005?"eq":(v>0?"up":"dn");
+    const sgn = Math.abs(v)<0.005?"0.00":(v>0?"+":"")+v.toFixed(2);
+    h+='<tr><td class="pname"><span class="swatch" style="background:var('+p.c+')"></span>'+p.name+'</td>'+
+       '<td class="r num">'+f1(p.weight)+'%</td><td class="r num">'+f2(p.planned)+'</td>'+
+       '<td class="r num">'+f2(p.actual)+'</td><td class="r delta '+cls+'">'+sgn+'</td></tr>';
+  });
+  const wp=DATA.parts.reduce((a,b)=>a+b.weight*b.planned,0)/DATA.parts.reduce((a,b)=>a+b.weight,0);
+  const wa=DATA.parts.reduce((a,b)=>a+b.weight*b.actual,0)/DATA.parts.reduce((a,b)=>a+b.weight,0);
+  h+='</tbody><tfoot><tr><td>Project</td><td class="r">100%</td><td class="r">'+f2(wp)+
+     '</td><td class="r">'+f2(wa)+'</td><td class="r delta '+(wa>=wp?"up":"dn")+'">'+
+     ((wa-wp>0?"+":"")+(wa-wp).toFixed(2))+'</td></tr></tfoot>';
+  t.innerHTML=h;
+}
+
+/* ---------------- horizontal bars: work packages ---------------- */
+function pkgChart(){
+  const s=$("#pkgChart"); s.innerHTML="";
+  const nw=narrow();
+  const p=DATA.packages, W=nw?440:620, H=nw?290:300, L=nw?108:132, R=nw?40:46, T=8, B=8;
+  vb(s,W,H);
+  const fs=nw?9.5:9;
+  const pw=W-L-R, rowH=(H-T-B)/p.length, bh=10;
+  const X=v=>L+(v/100)*pw;
+  for(let v=0;v<=100;v+=25){
+    s.appendChild(sv("line",{x1:X(v),y1:T,x2:X(v),y2:H-B-10,class:v===0?"axis":"grid-l"}));
+    s.appendChild(sv("text",{x:X(v),y:H-1,"text-anchor":"middle","font-size":fs},v+"%"));
+  }
+  p.forEach((d,i)=>{
+    const y=T+rowH*i+rowH/2;
+    s.appendChild(sv("text",{x:L-10,y:y+3,"text-anchor":"end",class:"vlab","font-size":nw?10:10.5},d.name));
+    // planned (track) then actual
+    s.appendChild(sv("rect",{x:L,y:y-bh-2,width:Math.max(1.5,X(d.planned)-L),height:bh,rx:3,fill:"var(--plan)"}));
+    s.appendChild(sv("rect",{x:L,y:y+2,width:Math.max(1.5,X(d.actual)-L),height:bh,rx:3,fill:"var(--act)"}));
+    s.appendChild(sv("text",{x:X(Math.max(d.planned,2))+6,y:y-bh+5,"font-size":fs},f1(d.planned)+"%"));
+    s.appendChild(sv("text",{x:X(Math.max(d.actual,2))+6,y:y+bh+1,class:"vlab","font-size":fs+0.5},f1(d.actual)+"%"));
+  });
+}
+
+/* ---------------- donut: BOQ ---------------- */
+function boqChart(){
+  const s=$("#boqChart"); s.innerHTML="";
+  const b=DATA.boq, cx=86,cy=90, rO=66,rI=40;
+  let a0=-Math.PI/2;
+  b.rows.forEach(r=>{
+    const a1=a0+(r.pct/100)*Math.PI*2;
+    const big = (a1-a0)>Math.PI?1:0;
+    const p=[
+      "M",cx+rO*Math.cos(a0),cy+rO*Math.sin(a0),
+      "A",rO,rO,0,big,1,cx+rO*Math.cos(a1),cy+rO*Math.sin(a1),
+      "L",cx+rI*Math.cos(a1),cy+rI*Math.sin(a1),
+      "A",rI,rI,0,big,0,cx+rI*Math.cos(a0),cy+rI*Math.sin(a0),"Z"
+    ].join(" ");
+    s.appendChild(sv("path",{d:p,fill:"var("+r.c+")",stroke:"var(--card)","stroke-width":1.5}));
+    a0=a1;
+  });
+  s.appendChild(sv("text",{x:cx,y:cy-4,"text-anchor":"middle",class:"vlab","font-size":"13"},"EGP"));
+  s.appendChild(sv("text",{x:cx,y:cy+11,"text-anchor":"middle",class:"vlab","font-size":"12"},"858.1 M"));
+  // side labels for the two big slices
+  const big2=b.rows.slice(0,2);
+  big2.forEach((r,i)=>{
+    const y=62+i*26;
+    s.appendChild(sv("rect",{x:168,y:y-8,width:9,height:9,rx:2.5,fill:"var("+r.c+")"}));
+    s.appendChild(sv("text",{x:182,y:y,class:"vlab","font-size":"10"},f2(r.pct)+"%"));
+    s.appendChild(sv("text",{x:182,y:y+11,"font-size":"9"},r.div));
+  });
+  $("#boqTotal").textContent="Total EGP "+money(b.total);
+}
+function boqTable(){
+  const b=DATA.boq;
+  let h='<thead><tr><th>Division</th><th class="r">Amount (EGP)</th><th class="r">%</th></tr></thead><tbody>';
+  b.rows.forEach(r=>{
+    h+='<tr><td><span class="swatch" style="background:var('+r.c+')"></span>'+r.div+'</td>'+
+       '<td class="r num">'+money(r.amount)+'</td><td class="r num">'+f2(r.pct)+'</td></tr>';
+  });
+  h+='</tbody><tfoot><tr><td>Total</td><td class="r">'+money(b.total)+'</td><td class="r">100.00</td></tr></tfoot>';
+  $("#boqTable").innerHTML=h;
+}
+
+/* ---------------- activities ---------------- */
+function activities(){
+  let h='<thead><tr><th>Activity</th><th>Part</th><th>Level</th><th class="r">%</th><th>Status</th></tr></thead><tbody>';
+  DATA.activities.forEach(a=>{
+    h+='<tr><td>'+a.a+'</td><td class="pname">'+a.p+'</td><td>'+a.l+'</td>'+
+       '<td class="r num">'+a.pc+'%</td><td><span class="pill '+statusClass(a.s)+'">'+a.s+'</span></td></tr>';
+  });
+  $("#actTable").innerHTML=h+'</tbody>';
+  const box=$("#actCards"); box.innerHTML="";
+  DATA.activities.forEach(a=>{
+    const d=ce("div","act");
+    d.innerHTML='<div class="t">'+a.a+'</div>'+
+      '<div class="m"><span class="tag">'+a.p+'</span><span class="tag">'+a.l+'</span>'+
+      '<span class="pill '+statusClass(a.s)+'">'+a.s+'</span></div>'+
+      '<div class="pr"><span class="mb"><i style="width:'+a.pc+'%"></i></span><b>'+a.pc+'%</b></div>';
+    box.appendChild(d);
+  });
+}
+
+/* ---------------- stacked bars: manpower ---------------- */
+function mpChart(){
+  const s=$("#mpChart"); s.innerHTML="";
+  const nw=narrow();
+  const m=DATA.manpower, W=nw?450:700, H=nw?270:280, L=nw?30:36, R=12, T=18, B=40;
+  vb(s,W,H);
+  const fs=nw?10:9.5;
+  const pw=W-L-R, ph=H-T-B, slot=pw/m.days.length, bw=Math.min(nw?34:46,slot*0.56);
+  const tot=m.days.map((_,i)=>m.crafts.reduce((a,c)=>a+(c.v[i]||0),0));
+  const max=Math.max(...tot,10);
+  const step = max>120?40:(max>60?20:10);
+  const top=Math.ceil(max/step)*step;
+  const Y=v=>T+ph-(v/top)*ph;
+  for(let v=0;v<=top;v+=step){
+    s.appendChild(sv("line",{x1:L,y1:Y(v),x2:L+pw,y2:Y(v),class:v===0?"axis":"grid-l"}));
+    s.appendChild(sv("text",{x:L-7,y:Y(v)+3.5,"text-anchor":"end","font-size":fs},v));
+  }
+  m.days.forEach((day,i)=>{
+    const x=L+slot*i+(slot-bw)/2;
+    if(m.off.includes(i)){
+      s.appendChild(sv("rect",{x:x,y:T,width:bw,height:ph,rx:5,fill:"var(--line-2)",opacity:.6}));
+      s.appendChild(sv("text",{x:x+bw/2,y:T+ph/2,"text-anchor":"middle","font-size":fs},"Off"));
+    } else {
+      let acc=0;
+      m.crafts.forEach(c=>{
+        const v=c.v[i]||0; if(!v) return;
+        const y=Y(acc+v), hh=Y(acc)-Y(acc+v);
+        s.appendChild(sv("rect",{x:x,y:y,width:bw,height:Math.max(1,hh),fill:"var("+c.c+")"}));
+        if(hh>13) s.appendChild(sv("text",{x:x+bw/2,y:y+hh/2+3.5,"text-anchor":"middle",
+          fill:"#fff","font-size":fs-0.5,"font-weight":"700"},v));
+        acc+=v;
+      });
+      s.appendChild(sv("text",{x:x+bw/2,y:Y(acc)-6,"text-anchor":"middle",class:"vlab","font-size":fs+1},acc));
+    }
+    s.appendChild(sv("text",{x:L+slot*i+slot/2,y:H-18,"text-anchor":"middle",class:"vlab","font-size":fs+1},day));
+  });
+  s.appendChild(sv("text",{x:L,y:H-4,"font-size":fs-0.5},"head-count per day"));
+  const lg=$("#mpLegend"); lg.innerHTML="";
+  m.crafts.forEach(c=>{
+    const e=ce("span",null,'<i style="background:var('+c.c+')"></i>'+c.name);
+    lg.appendChild(e);
+  });
+}
+function mpTable(){
+  const m=DATA.manpower;
+  let h='<thead><tr><th>Craft</th><th class="r">Man-days</th></tr></thead><tbody>', tot=0;
+  m.crafts.forEach(c=>{
+    const t=c.v.reduce((a,b)=>a+b,0); tot+=t;
+    h+='<tr><td><span class="swatch" style="background:var('+c.c+')"></span>'+c.name+'</td>'+
+       '<td class="r num">'+t+'</td></tr>';
+  });
+  h+='</tbody><tfoot><tr><td>Total / week</td><td class="r">'+tot+'</td></tr></tfoot>';
+  $("#mpTable").innerHTML=h;
+}
+
+/* ---------------- engineering / materials / issues / photos ---------------- */
+function minis(){
+  const fill=(sel,rows)=>{
+    const b=$(sel); b.innerHTML="";
+    rows.forEach(r=>{
+      b.appendChild(ce("div","mini",'<div class="l">'+r.l+'</div><div class="n">'+(r.n==null?"—":r.n)+'</div>'));
+    });
+  };
+  fill("#engMinis",DATA.engineering);
+  fill("#matMinis",DATA.materials);
+}
+function issues(){
+  const b=$("#issuesCard"); b.innerHTML="";
+  DATA.issues.forEach(i=>{
+    b.appendChild(ce("div","iss",
+      '<svg viewBox="0 0 24 24"><path d="M12 3.5l9.2 16.3H2.8z"></path><path d="M12 9.6v4.3M12 16.6v.2"></path></svg>'+
+      '<div class="b"><b>'+i.t+'</b>'+i.d+'</div>'));
+  });
+}
+const PH_ICON='<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"></rect>'+
+  '<circle cx="12" cy="12.5" r="3.4"></circle><path d="M8.5 6l1.2-2h4.6l1.2 2"></path></svg>';
+function photos(){
+  const b=$("#photos"); b.innerHTML="";
+  (DATA.photos||[]).forEach(p=>{
+    const card=ce("div","ph");
+    const im=ce("div","im",PH_ICON);
+    if(p.f){
+      const img=new Image();
+      img.alt=(p.t||"")+" — "+(p.d||"");
+      img.loading="lazy";
+      img.style.cssText="width:100%;height:100%;object-fit:cover;display:block";
+      img.onload=()=>{ im.innerHTML=""; im.style.background="none"; im.appendChild(img); };
+      img.src=CONFIG.photosPath+p.f;          // falls back to the icon if missing
+    }
+    card.appendChild(im);
+    card.appendChild(ce("div","cap",'<b>'+(p.t||"")+'</b>'+(p.d||"")+'<br><span>'+(p.dt||"")+'</span>'));
+    b.appendChild(card);
+  });
+}
+function archive(){
+  const b=$("#archiveCard"); if(!b) return;
+  const list=ce("div","arch");
+  const cur=String(DATA.meta.reportNo||"").replace(/^0+/,"");
+  (DATA.archive||[]).forEach(a=>{
+    const isCur = String(a.no).replace(/^0+/,"")===cur;
+    const label = a.period || (isCur ? DATA.meta.period : "Not uploaded yet");
+    const sub   = a.dataDate ? "Data date "+a.dataDate : (a.note||"");
+    if(a.pdf){
+      const el=ce("a","" ,'<span class="no">'+a.no+'</span>'+
+        '<span class="meta2"><b>Report '+a.no+' · '+label+'</b><span>'+sub+'</span></span>'+
+        '<span class="get"><svg viewBox="0 0 24 24"><path d="M12 3v11M12 14l-4-4M12 14l4-4"/>'+
+        '<path d="M4 17v2.5A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5V17"/></svg>PDF</span>');
+      el.setAttribute("href",CONFIG.reportsPath+a.pdf);
+      el.setAttribute("target","_blank"); el.setAttribute("rel","noopener");
+      if(isCur) el.classList.add("cur");
+      list.appendChild(el);
+    } else {
+      const el=ce("div","row"+(isCur?" cur":""),'<span class="no">'+a.no+'</span>'+
+        '<span class="meta2"><b>Report '+a.no+(label?' · '+label:'')+'</b><span>'+sub+'</span></span>'+
+        '<span class="soon">'+(isCur?"On screen now":"PDF to be added")+'</span>');
+      list.appendChild(el);
+    }
+  });
+  b.innerHTML=""; b.appendChild(list);
+}
+
+/* ---------------- draw ---------------- */
+function drawAll(){
+  elapsed(); scurve(); partsChart(); pkgChart(); boqChart(); mpChart();
+}
+function sections(){
+  const show=DATA.show||{};
+  document.querySelectorAll("[data-sec]").forEach(el=>{
+    if(show[el.dataset.sec]===false) el.style.display="none";
+  });
+  // renumber the visible section badges so they stay 01, 02, 03 …
+  let n=0;
+  document.querySelectorAll(".sec").forEach(s=>{
+    if(s.style.display==="none") return;
+    n++; const b=s.querySelector(".num"); if(b) b.textContent=String(n).padStart(2,"0");
+  });
+}
+function renderAll(){
+  sections();
+  head(); kpis(); statusRow(); highlights();
+  partsTable(); boqTable(); activities(); mpTable(); minis(); issues(); photos(); archive();
+  drawAll();
+}
+
+/* =======================================================================
+   SHEET — reads each tab of the Google Sheet as CSV and rebuilds DATA.
+   Works once the page is served over http(s) (GitHub Pages).
+   ======================================================================= */
+function parseCSV(t){
+  const rows=[]; let row=[], f="", q=false;
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+    if(q){
+      if(c==='"'){ if(t[i+1]==='"'){ f+='"'; i++; } else q=false; }
+      else f+=c;
+    } else if(c==='"'){ q=true; }
+    else if(c===','){ row.push(f); f=""; }
+    else if(c==='\n'){ row.push(f); rows.push(row); row=[]; f=""; }
+    else if(c!=='\r'){ f+=c; }
+  }
+  if(f.length||row.length){ row.push(f); rows.push(row); }
+  return rows;
+}
+// rows after the header row, stopping at the first blank first cell
+function body(rows, firstHeader){
+  let h=-1;
+  for(let i=0;i<rows.length;i++){
+    if((rows[i][0]||"").trim().toLowerCase()===firstHeader.toLowerCase()){ h=i; break; }
+  }
+  if(h<0) return [];
+  const out=[];
+  for(let i=h+1;i<rows.length;i++){
+    const r=rows[i];
+    if(!r || !(r[0]||"").trim()) break;
+    out.push(r.map(x=>(x==null?"":String(x).trim())));
+  }
+  return out;
+}
+const N = v => { if(v===""||v==null) return null; const n=parseFloat(String(v).replace(/,/g,"")); return isNaN(n)?null:n; };
+const kv = rows => { const o={}; body(rows,"Key").forEach(r=>{ o[r[0]]=r[1]; }); return o; };
+const TRUE_ = v => String(v).trim().toUpperCase()==="TRUE";
+const PC = ["--c1","--c2","--c3","--c4","--c5","--c6"];
+
+async function tab(id,name){
+  const url="https://docs.google.com/spreadsheets/d/"+id+
+            "/gviz/tq?tqx=out:csv&sheet="+encodeURIComponent(name)+"&t="+Date.now();
+  const r=await fetch(url,{cache:"no-store"});
+  if(!r.ok) throw new Error(name+" "+r.status);
+  return parseCSV(await r.text());
+}
+
+async function loadSheet(){
+  const id=(CONFIG.sheetId||"").trim();
+  if(!id) return;
+  const names=["Meta","KPI","Status","Highlights","SCurve","Parts","Packages","BOQ",
+               "Activities","Manpower","Issues","Photos","Archive"];
+  let T;
+  try{
+    const got=await Promise.all(names.map(n=>tab(id,n)));
+    T={}; names.forEach((n,i)=>T[n]=got[i]);
+  }catch(err){
+    const s=$("#fSrc"); if(s){ s.textContent="Saved copy — the sheet could not be read · "; }
+    console.warn("sheet:",err);
+    return;
+  }
+  const meta=kv(T.Meta), k=kv(T.KPI);
+  const D={
+    show:{ engineering:TRUE_(meta.show_engineering), photos:TRUE_(meta.show_photos) },
+    meta:{
+      project:meta.project, sector:meta.sector, location:meta.location,
+      reportNo:meta.report_no, period:meta.period, dataDate:meta.data_date,
+      preparedBy:meta.prepared_by, updated:meta.updated, cover:meta.cover_image
+    },
+    kpi:{
+      planned:N(k.planned)||0, plannedWeek:N(k.planned_week)||0,
+      actual:N(k.actual)||0,  actualWeek:N(k.actual_week)||0,
+      variance:N(k.variance)||0, spi:N(k.spi)||0,
+      timeElapsedPct:N(k.time_elapsed_pct)||0,
+      daysElapsed:N(k.days_elapsed)||0, daysRemaining:N(k.days_remaining)||0,
+      forecastFinish:k.forecast_finish||""
+    },
+    status: body(T.Status,"Item").map(r=>({lab:r[0], v:r[1], s:(r[2]||"info").toLowerCase()})),
+    highlights: body(T.Highlights,"Part").map((r,i)=>({code:r[0], txt:r[1], st:r[2], c:PC[i%6]})),
+    scurve:{ months:[], planned:[], actual:[] },
+    parts: body(T.Parts,"Part").map((r,i)=>({
+      code:r[0], name:r[0], zone:r[1], weight:N(r[2])||0,
+      planned:N(r[3])||0, actual:N(r[4])||0, c:PC[i%6] })),
+    packages: body(T.Packages,"Package").map(r=>({name:r[0], planned:N(r[1])||0, actual:N(r[2])||0})),
+    boq:{ total:0, rows:[] },
+    activities: body(T.Activities,"Activity").map(r=>({
+      a:r[0], p:r[1], l:r[2], pc:N(r[3])||0, s:r[4] })),
+    manpower:{ days:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], off:[], crafts:[] },
+    engineering: DATA.engineering, materials: DATA.materials,
+    issues: body(T.Issues,"Title").map(r=>({t:r[0], d:r[1]})),
+    photos: body(T.Photos,"File").map(r=>({f:r[0], t:r[1], d:r[2], dt:r[3]})),
+    archive: body(T.Archive,"Report No").map(r=>({
+      no:r[0], period:r[1], dataDate:r[2], pdf:r[3], note:r[4] }))
+  };
+  body(T.SCurve,"Month").forEach(r=>{
+    D.scurve.months.push(r[0]); D.scurve.planned.push(N(r[1])); D.scurve.actual.push(N(r[2]));
+  });
+  const brows=body(T.BOQ,"Division").filter(r=>r[0].toUpperCase()!=="TOTAL");
+  brows.forEach((r,i)=>D.boq.rows.push({div:r[0], amount:N(r[1])||0, pct:N(r[2])||0, c:PC[i%6]}));
+  D.boq.total=D.boq.rows.reduce((a,b)=>a+b.amount,0);
+  body(T.Manpower,"Craft").filter(r=>r[0].toUpperCase()!=="TOTAL").forEach((r,i)=>{
+    D.manpower.crafts.push({name:r[0], v:[1,2,3,4,5,6,7].map(j=>N(r[j])||0), c:PC[i%6]});
+  });
+  D.manpower.days.forEach((_,i)=>{
+    if(D.manpower.crafts.every(c=>!c.v[i])) D.manpower.off.push(i);
+  });
+
+  DATA=D;
+  document.querySelectorAll("[data-sec]").forEach(el=>{ el.style.display=""; });
+  renderAll();
+  const s=$("#fSrc"); if(s) s.textContent="Live from the project sheet · ";
+}
+
+/* ---------------- PDF ---------------- */
+$("#pdfBtn").addEventListener("click",()=>{
+  try{ window.print(); }
+  catch(e){ alertless("Printing is blocked here — open the published page to save the PDF."); }
+});
+function alertless(msg){
+  const s=$("#fSrc"); if(s){ s.textContent=msg+" · "; setTimeout(()=>{s.textContent="";},6000); }
+}
+
+renderAll();
+loadSheet();
+if(CONFIG.refreshMinutes>0) setInterval(loadSheet, CONFIG.refreshMinutes*60000);
+let rt; addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(drawAll,180); });
+</script>
+</body>
+</html>
