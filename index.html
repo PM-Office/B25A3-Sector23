@@ -322,6 +322,28 @@ tfoot td{font-weight:800;border-top:1px solid var(--line);border-bottom:0;backgr
 .arch .soon{font-size:11px;color:var(--muted);white-space:nowrap}
 .arch .cur{border-color:color-mix(in srgb,var(--accent) 45%,transparent);
   background:color-mix(in srgb,var(--accent) 7%,transparent)}
+/* collapsible groups */
+.agroup{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);overflow:hidden}
+.agroup+.agroup{margin-top:9px}
+.agroup>summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;
+  padding:13px 14px;font-family:var(--display);font-weight:800;font-size:13.5px;
+  background:var(--card-2);user-select:none}
+.agroup>summary::-webkit-details-marker{display:none}
+.agroup>summary:hover{background:var(--accent-soft)}
+.agroup>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.agroup .plus{
+  width:22px;height:22px;flex:0 0 22px;border-radius:6px;display:grid;place-items:center;
+  background:var(--accent);color:#fff;transition:transform .18s ease}
+.agroup .plus svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round}
+.agroup[open] .plus{transform:rotate(45deg)}
+.agroup .gname{flex:1;min-width:0}
+.agroup .cnt{
+  font-family:var(--body);font-size:11px;font-weight:700;color:var(--muted);
+  background:var(--line-2);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.agroup .inner{display:flex;flex-direction:column;gap:7px;padding:11px 12px 13px}
+.agroup .empty{font-size:12px;color:var(--muted);padding:3px 2px}
+@media (prefers-reduced-motion:reduce){ .agroup .plus{transition:none} }
 
 footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);
   display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11.5px;color:var(--muted)}
@@ -570,7 +592,7 @@ footer .sp{flex:1}
 
   <!-- 10 ARCHIVE -->
   <div class="sec" data-sec="archive"><span class="num">10</span><h2>Report Archive</h2>
-    <span class="note">Every weekly report as a PDF</span></div>
+    <span class="note">Baseline, monthly and weekly reports as PDFs</span></div>
   <div class="card c12" data-sec="archive" id="archiveCard"></div>
 
   <footer>
@@ -708,11 +730,11 @@ let DATA = {
     {f:"w05-6.jpg", t:"Plaza – Part 06",     d:"Foundation plain concrete", dt:"22-Nov-2026"}
   ],
   archive:[
-    {no:"01", period:"", dataDate:"", pdf:"", note:""},
-    {no:"02", period:"", dataDate:"", pdf:"", note:""},
-    {no:"03", period:"", dataDate:"", pdf:"", note:""},
-    {no:"04", period:"", dataDate:"", pdf:"", note:""},
-    {no:"05", period:"16 – 22 Nov 2026", dataDate:"22-Nov-2026", pdf:"", note:"Current report"}
+    {no:"01", period:"", dataDate:"", pdf:"", note:"", group:"Weekly"},
+    {no:"02", period:"", dataDate:"", pdf:"", note:"", group:"Weekly"},
+    {no:"03", period:"", dataDate:"", pdf:"", note:"", group:"Weekly"},
+    {no:"04", period:"", dataDate:"", pdf:"", note:"", group:"Weekly"},
+    {no:"05", period:"16 – 22 Nov 2026", dataDate:"22-Nov-2026", pdf:"", note:"Current report", group:"Weekly"}
   ]
 };
 
@@ -1127,17 +1149,51 @@ function photos(){
     b.appendChild(card);
   });
 }
+// the three archive groups, in the order they appear on the page.
+// A row's Group cell decides where it lands; anything else falls under Weekly.
+const ARCH_GROUPS=[
+  {name:"Schedule Baseline", test:g=>/baseline|schedule/i.test(g)},
+  {name:"Monthly Reports",   test:g=>/month/i.test(g)},
+  {name:"Weekly Reports",    test:g=>true, open:true}
+];
 function archive(){
   const b=$("#archiveCard"); if(!b) return;
-  const list=ce("div","arch");
+  const wrap=ce("div","arch");
   const cur=String(DATA.meta.reportNo||"").replace(/^0+/,"");
+  const buckets=ARCH_GROUPS.map(()=>[]);
   (DATA.archive||[]).forEach(a=>{
-    const isCur = String(a.no).replace(/^0+/,"")===cur;
+    const g=(a.group||"").trim();
+    const i=ARCH_GROUPS.findIndex(x=>x.test(g));
+    buckets[i<0?ARCH_GROUPS.length-1:i].push(a);
+  });
+  ARCH_GROUPS.forEach((G,gi)=>{
+    const rows=buckets[gi];
+    const withPdf=rows.filter(r=>r.pdf).length;
+    const det=ce("details","agroup");
+    if(G.open) det.open=true;
+    const sum=ce("summary",null,
+      '<span class="plus"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>'+
+      '<span class="gname">'+G.name+'</span>'+
+      '<span class="cnt">'+(withPdf? withPdf+(withPdf===1?" file":" files") : "no files yet")+'</span>');
+    det.appendChild(sum);
+    const inner=ce("div","inner");
+    if(!rows.length) inner.appendChild(ce("div","empty","Nothing added yet."));
+    rows.forEach(a=>buildRow(inner,a,cur));
+    det.appendChild(inner);
+    wrap.appendChild(det);
+  });
+  b.innerHTML=""; b.appendChild(wrap);
+}
+function buildRow(list,a,cur){
+  {
+    const no=String(a.no||"").trim();
+    const isCur = no.replace(/^0+/,"")===cur && /^\d+$/.test(no);
+    const title = /^\d{1,3}$/.test(no) ? "Report "+no : no;
     const label = a.period || (isCur ? DATA.meta.period : (a.pdf ? "" : "Not uploaded yet"));
     const sub   = a.dataDate ? "Data date "+a.dataDate : (a.note||"");
     if(a.pdf){
-      const el=ce("a","" ,'<span class="no">'+a.no+'</span>'+
-        '<span class="meta2"><b>Report '+a.no+(label?' · '+label:'')+'</b><span>'+sub+'</span></span>'+
+      const el=ce("a","" ,'<span class="no">'+no+'</span>'+
+        '<span class="meta2"><b>'+title+(label?' · '+label:'')+'</b><span>'+sub+'</span></span>'+
         '<span class="get"><svg viewBox="0 0 24 24"><path d="M12 3v11M12 14l-4-4M12 14l4-4"/>'+
         '<path d="M4 17v2.5A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5V17"/></svg>PDF</span>');
       el.setAttribute("href",CONFIG.reportsPath+encodeURIComponent(a.pdf));
@@ -1145,13 +1201,12 @@ function archive(){
       if(isCur) el.classList.add("cur");
       list.appendChild(el);
     } else {
-      const el=ce("div","row"+(isCur?" cur":""),'<span class="no">'+a.no+'</span>'+
-        '<span class="meta2"><b>Report '+a.no+(label?' · '+label:'')+'</b><span>'+sub+'</span></span>'+
+      const el=ce("div","row"+(isCur?" cur":""),'<span class="no">'+no+'</span>'+
+        '<span class="meta2"><b>'+title+(label?' · '+label:'')+'</b><span>'+sub+'</span></span>'+
         '<span class="soon">'+(isCur?"On screen now":"PDF to be added")+'</span>');
       list.appendChild(el);
     }
-  });
-  b.innerHTML=""; b.appendChild(list);
+  }
 }
 
 /* ---------------- draw ---------------- */
@@ -1196,13 +1251,21 @@ function parseCSV(t){
   if(f.length||row.length){ row.push(f); rows.push(row); }
   return rows;
 }
-// rows after the header row, stopping at the first blank first cell
+// rows after the header row, stopping at the first blank first cell.
+// The header is found by its first cell, then by any cell, and if the sheet
+// comes back without it at all, by the template's own layout (header on row 4).
 function body(rows, firstHeader){
+  const want=firstHeader.trim().toLowerCase();
   let h=-1;
   for(let i=0;i<rows.length;i++){
-    if((rows[i][0]||"").trim().toLowerCase()===firstHeader.toLowerCase()){ h=i; break; }
+    if((rows[i][0]||"").trim().toLowerCase()===want){ h=i; break; }
   }
-  if(h<0) return [];
+  if(h<0){
+    for(let i=0;i<rows.length;i++){
+      if((rows[i]||[]).some(c=>(c||"").trim().toLowerCase()===want)){ h=i; break; }
+    }
+  }
+  if(h<0) h=3;                       // row 4 of the template
   const out=[];
   for(let i=h+1;i<rows.length;i++){
     const r=rows[i];
@@ -1288,7 +1351,7 @@ async function loadSheet(){
     issues: some(T.Issues,"Title",r=>({t:r[0], d:r[1]}), keep.issues),
     photos: some(T.Photos,"File",r=>({f:r[0], t:r[1], d:r[2], dt:r[3]}), keep.photos),
     archive: some(T.Archive,"Report No",r=>({
-      no:r[0], period:r[1], dataDate:r[2], pdf:r[3], note:r[4] }), keep.archive)
+      no:r[0], period:r[1], dataDate:r[2], pdf:r[3], note:r[4], group:r[5] }), keep.archive)
   };
   const sc=body(T.SCurve,"Month");
   if(sc.length){
