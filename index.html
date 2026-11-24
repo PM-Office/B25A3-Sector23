@@ -1120,7 +1120,7 @@ function photos(){
       img.loading="lazy";
       img.style.cssText="width:100%;height:100%;object-fit:cover;display:block";
       img.onload=()=>{ im.innerHTML=""; im.style.background="none"; im.appendChild(img); };
-      img.src=CONFIG.photosPath+p.f;          // falls back to the icon if missing
+      img.src=CONFIG.photosPath+encodeURIComponent(p.f);   // falls back to the icon if missing
     }
     card.appendChild(im);
     card.appendChild(ce("div","cap",'<b>'+(p.t||"")+'</b>'+(p.d||"")+'<br><span>'+(p.dt||"")+'</span>'));
@@ -1133,14 +1133,14 @@ function archive(){
   const cur=String(DATA.meta.reportNo||"").replace(/^0+/,"");
   (DATA.archive||[]).forEach(a=>{
     const isCur = String(a.no).replace(/^0+/,"")===cur;
-    const label = a.period || (isCur ? DATA.meta.period : "Not uploaded yet");
+    const label = a.period || (isCur ? DATA.meta.period : (a.pdf ? "" : "Not uploaded yet"));
     const sub   = a.dataDate ? "Data date "+a.dataDate : (a.note||"");
     if(a.pdf){
       const el=ce("a","" ,'<span class="no">'+a.no+'</span>'+
-        '<span class="meta2"><b>Report '+a.no+' · '+label+'</b><span>'+sub+'</span></span>'+
+        '<span class="meta2"><b>Report '+a.no+(label?' · '+label:'')+'</b><span>'+sub+'</span></span>'+
         '<span class="get"><svg viewBox="0 0 24 24"><path d="M12 3v11M12 14l-4-4M12 14l4-4"/>'+
         '<path d="M4 17v2.5A1.5 1.5 0 005.5 21h13a1.5 1.5 0 001.5-1.5V17"/></svg>PDF</span>');
-      el.setAttribute("href",CONFIG.reportsPath+a.pdf);
+      el.setAttribute("href",CONFIG.reportsPath+encodeURIComponent(a.pdf));
       el.setAttribute("target","_blank"); el.setAttribute("rel","noopener");
       if(isCur) el.classList.add("cur");
       list.appendChild(el);
